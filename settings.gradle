@@ -1,1 +1,2 @@
 include ':app', ':podcast-statistics-collection-sdk'
+rootProject.name = 'android-sdk'

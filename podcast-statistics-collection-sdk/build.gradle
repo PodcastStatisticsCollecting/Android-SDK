@@ -1,4 +1,6 @@
 apply plugin: 'com.android.library'
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
 
 android {
     compileSdkVersion 27
@@ -34,4 +36,37 @@ dependencies {
     implementation 'com.birbit:android-priority-jobqueue:2.0.1'
     implementation 'com.squareup.okhttp3:okhttp:3.10.0'
     implementation 'com.google.code.gson:gson:2.8.2'
+}
+
+install {
+    repositories.mavenInstaller {
+        pom.project {
+            group "podcast.statistics.collector"
+            artifactId "android-sdk"
+            version "1.0.0"
+        }
+    }
+}
+
+group = 'podcast.statistics.collector'
+version = '1.0'
+
+bintray {
+    user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
+    key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
+    // jFrog plugin must be declared for this line to work
+    configurations = ['archives']
+    // Package info for BinTray
+    pkg {
+        repo = 'Android-SDK'
+        name = 'podcast-statistics-collector'
+        userOrg = user
+        licenses = ['MIT']
+        vcsUrl = 'https://github.com/PodcastStatisticsCollecting/Android-SDK.git'
+        version {
+            name = '1.0'
+            desc = 'Android SDK 1.0'
+            vcsTag = '1.0'
+        }
+    }
 }
