@@ -1,2 +1,2 @@
-include ':app', ':podcast-statistics-collection-sdk'
-rootProject.name = 'android-sdk'
+include ':app', ':android-sdk'
+rootProject.name = 'android-sdk-demo'
