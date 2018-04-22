@@ -1,6 +1,7 @@
 package podcast.statistics.collector;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -17,6 +18,7 @@ import com.google.gson.Gson;
 
 import java.util.Collections;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * Singleton service, which provide API for podcast statistics collection.
@@ -24,6 +26,10 @@ import java.util.Objects;
 public class PodcastStatisticsCollector {
 
     private final static Gson GSON = GsonCreator.getGSON();
+
+    private static final String PREF_PODCAST_STAT_UNIQUE_ID = "PREF_PODCAST_STAT_UNIQUE_ID";
+
+    private static String uniqueID = null;
 
     private String apiKey;
 
@@ -45,36 +51,46 @@ public class PodcastStatisticsCollector {
         getInstance().apiKey = apiKey != null ? apiKey : "ANDROID_SDK_KEY";
         configureJobManager(Objects.requireNonNull(context, "context"));
         getInstance().apiClient = new PodcastStatisticsClient(getInstance().apiKey);
+        initId(context);
     }
 
     /**
      * Indicate, that play event occurs
-     * @param playEvent - payload of event
+     * @param playEventBuilder - payload of event
      */
-    public static void play(@NonNull PlayEvent playEvent) {
-        Objects.requireNonNull(playEvent, "playEvent");
-        getInstance().getJobManager()
-                .addJobInBackground(new PostEventJob(GSON.toJson(Collections.singletonList(playEvent))));
+    public static void play(@NonNull PlayEvent.Builder playEventBuilder) {
+        Objects.requireNonNull(playEventBuilder, "playEventBuilder");
+
+        playEventBuilder.setUserId(uniqueID);
+
+        getInstance().getJobManager().addJobInBackground(new PostEventJob(
+                GSON.toJson(Collections.singletonList(playEventBuilder.create()))));
     }
 
     /**
      * Indicate, that ended event occurs
-     * @param endedEvent - payload of event
+     * @param endedEventBuilder - payload of event
      */
-    public static void ended(@NonNull EndedEvent endedEvent) {
-        Objects.requireNonNull(endedEvent, "endedEvent");
-        getInstance().getJobManager()
-                .addJobInBackground(new PostEventJob(GSON.toJson(Collections.singletonList(endedEvent))));
+    public static void ended(@NonNull EndedEvent.Builder endedEventBuilder) {
+        Objects.requireNonNull(endedEventBuilder, "endedEventBuilder");
+
+        endedEventBuilder.setUserId(uniqueID);
+
+        getInstance().getJobManager().addJobInBackground(new PostEventJob(
+                GSON.toJson(Collections.singletonList(endedEventBuilder.create()))));
     }
 
     /**
      * Indicate, that pause event occurs
-     * @param pauseEvent - payload of event
+     * @param pauseEventBuilder - payload of event
      */
-    public static void pause(@NonNull PauseEvent pauseEvent) {
-        Objects.requireNonNull(pauseEvent, "pauseEvent");
-        getInstance().getJobManager()
-                .addJobInBackground(new PostEventJob(GSON.toJson(Collections.singletonList(pauseEvent))));
+    public static void pause(@NonNull PauseEvent.Builder pauseEventBuilder) {
+        Objects.requireNonNull(pauseEventBuilder, "pauseEventBuilder");
+
+        pauseEventBuilder.setUserId(uniqueID);
+
+        getInstance().getJobManager().addJobInBackground(new PostEventJob(
+                GSON.toJson(Collections.singletonList(pauseEventBuilder.create()))));
     }
 
     static PodcastStatisticsCollector getInstance() {
@@ -125,6 +141,21 @@ public class PodcastStatisticsCollector {
                         .createSchedulerFor(context, PodcastStatisticsCollectorJobService.class), true);
 
         getInstance().jobManager = new JobManager(builder.build());
+    }
+
+    private synchronized static String initId(Context context) {
+        if (uniqueID == null) {
+            SharedPreferences sharedPrefs = context.getSharedPreferences(
+                    PREF_PODCAST_STAT_UNIQUE_ID, Context.MODE_PRIVATE);
+            uniqueID = sharedPrefs.getString(PREF_PODCAST_STAT_UNIQUE_ID, null);
+            if (uniqueID == null) {
+                uniqueID = UUID.randomUUID().toString();
+                SharedPreferences.Editor editor = sharedPrefs.edit();
+                editor.putString(PREF_PODCAST_STAT_UNIQUE_ID, uniqueID);
+                editor.commit();
+            }
+        }
+        return uniqueID;
     }
 
     private static class Holder {
