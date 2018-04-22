@@ -124,6 +124,14 @@ public class PlayEvent extends Event {
     @SerializedName("time")
     private final Date time;
 
+    /**
+     * Unique identifier for the user performing the action related to the request.
+     * This identifier is typically unique to an application or organization.
+     */
+    @NonNull
+    @SerializedName("user_id")
+    private final String userId;
+
     private PlayEvent(@Nullable String client,
                       @Nullable String author,
                       @NonNull String title,
@@ -134,7 +142,8 @@ public class PlayEvent extends Event {
                       @Nullable Boolean muted,
                       @Nullable Boolean paused,
                       @NonNull Double currentTime,
-                      @NonNull Double duration) {
+                      @NonNull Double duration,
+                      @NonNull String userId) {
         this.name = "media.play";
         this.nonce = NonceGenerator.generate();
         this.client = client;
@@ -149,6 +158,7 @@ public class PlayEvent extends Event {
         this.currentTime = Objects.requireNonNull(currentTime, "currentTime");
         this.duration = Objects.requireNonNull(duration, "duration");
         this.time = new Date();
+        this.userId = Objects.requireNonNull(userId, "userId");
     }
 
     @NonNull
@@ -221,6 +231,11 @@ public class PlayEvent extends Event {
         return time;
     }
 
+    @NonNull
+    public String getUserId() {
+        return userId;
+    }
+
     @Override
     public String toString() {
         return "PlayEvent{" +
@@ -238,6 +253,7 @@ public class PlayEvent extends Event {
                 ", currentTime=" + currentTime +
                 ", duration=" + duration +
                 ", time=" + time +
+                ", userId=" + userId +
                 '}';
     }
 
@@ -263,6 +279,7 @@ public class PlayEvent extends Event {
         private Boolean paused;
         private Double currentTime;
         private Double duration;
+        private String userId;
 
         private Builder() {
 
@@ -323,9 +340,14 @@ public class PlayEvent extends Event {
             return this;
         }
 
+        public Builder setUserId(@NonNull String userId) {
+            this.userId = userId;
+            return this;
+        }
+
         public PlayEvent create() {
             return new PlayEvent(client, author, title, podcastName, publisher, playbackRate, volume,
-                    muted, paused, currentTime, duration);
+                    muted, paused, currentTime, duration, userId);
         }
     }
 }

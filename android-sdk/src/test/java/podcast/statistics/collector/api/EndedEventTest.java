@@ -20,6 +20,7 @@ public class EndedEventTest {
                 .setPodcastName("Radiot podcast name")
                 .setDuration(63.2)
                 .setCurrentTime(0.01)
+                .setUserId("userId")
                 .create();
 
         String json = GSON.toJson(event);
@@ -31,6 +32,7 @@ public class EndedEventTest {
         Assert.assertEquals(event.getPodcastName(), endedEvent.getPodcastName());
         Assert.assertEquals(event.getDuration(), endedEvent.getDuration());
         Assert.assertEquals(event.getCurrentTime(), endedEvent.getCurrentTime());
+        Assert.assertEquals(event.getUserId(), endedEvent.getUserId());
     }
 
     @Test
@@ -47,6 +49,7 @@ public class EndedEventTest {
                 .setPlaybackRate(1.5)
                 .setPaused(Boolean.TRUE)
                 .setMuted(Boolean.TRUE)
+                .setUserId("userId")
                 .create();
 
         String json = GSON.toJson(event);
@@ -66,6 +69,7 @@ public class EndedEventTest {
         Assert.assertEquals(event.getMuted(), endedEvent.getMuted());
         Assert.assertEquals(event.getCurrentTime(), endedEvent.getCurrentTime());
         Assert.assertNotNull(endedEvent.getNonce());
+        Assert.assertEquals(event.getUserId(), endedEvent.getUserId());
     }
 
 }
